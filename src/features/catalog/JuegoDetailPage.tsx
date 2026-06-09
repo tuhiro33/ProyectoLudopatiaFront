@@ -22,12 +22,25 @@ export default function JuegoDetailPage({ juegoId, onBack }: JuegoDetailPageProp
         const cargarDetalle = async () => {
             try {
                 setLoading(true);
-                // Consultamos al endpoint dinámico que configuramos en Gin
                 const response = await api.get<Juego>(`/juegos/${juegoId}`);
-                setJuego(response.data);
+                
+                const datosJuego = response.data;
+
+                // BLINDAJE: Si el backend envía 'comentario', nos aseguramos de que
+                // 'contenido' también esté poblado por si las interfaces del front lo requieren, y viceversa.
+                if (datosJuego && datosJuego.resenas) {
+                    datosJuego.resenas = datosJuego.resenas.map((res: any) => ({
+                        ...res,
+                        // Si viene como 'comentario' se lo asigna a 'contenido', y al revés
+                        comentario: res.comentario || res.contenido || "",
+                        contenido: res.contenido || res.comentario || ""
+                    }));
+                }
+
+                setJuego(datosJuego);
                 setError(null);
             } catch (err) {
-                console.error(err);
+                console.error("Error al cargar detalles:", err);
                 setError('No se pudo establecer conexión con los servidores del índice.');
             } finally {
                 setLoading(false);
