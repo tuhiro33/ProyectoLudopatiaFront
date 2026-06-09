@@ -1,0 +1,99 @@
+.cardHorizontal {
+  display: flex;
+  background-color: rgba(17, 24, 39, 0.45);
+  border: 1px solid #111827;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  align-items: center;
+  padding-right: 16px;
+}
+
+.cardHorizontal:hover {
+  background-color: rgba(31, 41, 55, 0.45);
+  border-color: #1f2937;
+}
+
+/* Contenedor para la imagen/miniatura del juego */
+.imagePlaceholder {
+  width: 200px;
+  min-width: 200px;
+  height: 125px;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #4b5563;
+  font-weight: bold;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  border-right: 1px solid #111827;
+}
+
+/* Bloque Central de Información */
+.cardContent {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.badgeContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Estilos de las píldoras de categorías */
+.badge {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Colores adaptados a tu captura */
+.badgeDeportes { background-color: rgba(21, 128, 61, 0.15); color: #4ade80; }
+.badgeMultiplayer { background-color: rgba(109, 40, 217, 0.15); color: #a78bfa; }
+.badgeCompetitivo { background-color: rgba(29, 78, 216, 0.15); color: #60a5fa; }
+.badgeAccion { background-color: rgba(185, 28, 28, 0.15); color: #f87171; }
+.badgeDefault { background-color: rgba(55, 65, 81, 0.3); color: #d1d5db; }
+
+.description {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Indicador de navegación derecho */
+.arrowContainer {
+  color: #374151;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.cardHorizontal:hover .arrowContainer {
+  color: #94a3b8;
+  transform: translateX(3px);
+}
+

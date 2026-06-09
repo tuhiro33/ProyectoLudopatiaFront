@@ -1,0 +1,99 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background-color: rgba(13, 11, 33, 0.85);
+  backdrop-filter: blur(8px); /* Efecto esmerilado moderno */
+  border-bottom: 1px solid #23154d;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Marca / Logo del Proyecto */
+.brand {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.brandAccent {
+  color: #8b5cf6;
+}
+
+/* Contenedor de enlaces/acciones */
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.link {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #ffffff;
+}
+
+/* Botón de login estilo píldora neón */
+.authBtn {
+  background-color: #6d28d9;
+  color: #ffffff;
+  border: 1px solid #6d28d9;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.authBtn:hover {
+  background-color: #7c3aed;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+/* Información del usuario logueado */
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcomeText {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.userName {
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+.logoutBtn {
+  background-color: transparent;
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutBtn:hover {
+  background-color: rgba(248, 113, 113, 0.1);
+  border-color: #f87171;
+}
