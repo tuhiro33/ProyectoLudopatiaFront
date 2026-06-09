@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https:proyectoludopatiaback-production.up.railway.app', 
+  // CORREGIDO: Añadidas las dos barras '//' y el sufijo '/api' al final
+  baseURL: 'https://proyectoludopatiaback-production.up.railway.app/api', 
   withCredentials: true,
 });
 
