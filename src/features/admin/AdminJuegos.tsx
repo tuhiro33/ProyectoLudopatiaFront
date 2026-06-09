@@ -15,15 +15,19 @@ export default function AdminJuegos() {
   const [titulo, setTitulo] = useState('');
   const [desarrollador, setDesarrollador] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [imagenUrl, setImagenUrl] = useState(''); // <-- NUEVO ESTADO PARA LA URL
+  const [imagenUrl, setImagenUrl] = useState(''); 
   const [aleatoriedadID, setAleatoriedadID] = useState<number>(0);
   const [dependenciaID, setDependenciaID] = useState<number>(0);
   const [selectedCategorias, setSelectedCategorias] = useState<number[]>([]);
   const [selectedLootboxes, setSelectedLootboxes] = useState<number[]>([]);
 
+  // NUEVO: Estados para los filtros de búsqueda por nombre
+  const [busquedaCategoria, setBusquedaCategoria] = useState('');
+  const [busquedaLootbox, setBusquedaLootbox] = useState('');
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [subiendoImagen, setSubiendoImagen] = useState(false); // <-- ESTADO DE CARGA DE FIREBASE
+  const [subiendoImagen, setSubiendoImagen] = useState(false); 
 
   // Carga paralela de relaciones operativas
   useEffect(() => {
@@ -49,7 +53,6 @@ export default function AdminJuegos() {
     cargarDatosRelacionales();
   }, []);
 
-  // Función encargada de subir el archivo binario hacia Go + Firebase Storage
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -58,7 +61,7 @@ export default function AdminJuegos() {
     setSubiendoImagen(true);
 
     const formData = new FormData();
-    formData.append('image', file); // Mismo nombre "image" del c.Request.FormFile en Go
+    formData.append('image', file); 
 
     try {
       const response = await api.post<{ url: string }>('/upload', formData, {
@@ -67,7 +70,7 @@ export default function AdminJuegos() {
         },
       });
 
-      setImagenUrl(response.data.url); // Guardamos la URL pública devuelta
+      setImagenUrl(response.data.url); 
       alert('¡Imagen sincronizada con Firebase con éxito!');
     } catch (err: any) {
       console.error(err);
@@ -77,7 +80,6 @@ export default function AdminJuegos() {
     }
   };
 
-  // Manejo de selecciones múltiples (M2M)
   const handleCheckboxChange = (id: number, list: number[], setList: React.Dispatch<React.SetStateAction<number[]>>) => {
     if (list.includes(id)) {
       setList(list.filter(item => item !== id));
@@ -85,6 +87,15 @@ export default function AdminJuegos() {
       setList([...list, id]);
     }
   };
+
+  // NUEVO: Lógica de filtrado en tiempo real por nombre
+  const categoriasFiltradas = categorias.filter(cat => 
+    cat.nombre.toLowerCase().includes(busquedaCategoria.toLowerCase())
+  );
+
+  const lootboxesFiltradas = tiposLootbox.filter(lb => 
+    lb.nombre.toLowerCase().includes(busquedaLootbox.toLowerCase())
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +112,7 @@ export default function AdminJuegos() {
       titulo,
       descripcion,
       desarrollador,
-      imagen_url: imagenUrl, // <-- CLAVE INYECTADA EN EL PAYLOAD
+      imagen_url: imagenUrl, 
       aleatoriedad_id: aleatoriedadID,
       dependencia_id: dependenciaID,
       categorias_ids: selectedCategorias,
@@ -112,7 +123,6 @@ export default function AdminJuegos() {
       await api.post('/juegos', payload);
       alert('¡Juego auditado y guardado con éxito en el catálogo central!');
       
-      // Reseteo de campos completo
       setTitulo('');
       setDesarrollador('');
       setDescripcion('');
@@ -121,6 +131,8 @@ export default function AdminJuegos() {
       setDependenciaID(0);
       setSelectedCategorias([]);
       setSelectedLootboxes([]);
+      setBusquedaCategoria(''); // Reseteamos también los campos de búsqueda
+      setBusquedaLootbox('');
     } catch (err: any) {
       console.error(err);
       if (err.response?.data?.error) {
@@ -167,7 +179,6 @@ export default function AdminJuegos() {
             />
           </div>
 
-          {/* NUEVO INPUT FLOTANTE PARA EL CARGADOR DE IMÁGENES DE FIREBASE */}
           <div className={`${styles.formGroup} ${styles.fullWidth}`}>
             <label className={styles.label}>Portada del Juego (Firebase Storage)</label>
             <input
@@ -226,37 +237,63 @@ export default function AdminJuegos() {
             </select>
           </div>
 
+          {/* SECCIÓN CATEGORÍAS CON BUSCADOR */}
           <div className={`${styles.formGroup} ${styles.fullWidth}`}>
             <label className={styles.label}>Categorías Asociadas (Géneros)</label>
+            <input 
+              type="text"
+              className={styles.input}
+              style={{ marginBottom: '12px', padding: '6px 12px', fontSize: '0.9rem' }}
+              placeholder="🔍 Filtrar categorías por nombre..."
+              value={busquedaCategoria}
+              onChange={(e) => setBusquedaCategoria(e.target.value)}
+            />
             <div className={styles.checkboxGrid}>
-              {categorias.map(cat => (
-                <label key={cat.id} className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={selectedCategorias.includes(cat.id)}
-                    onChange={() => handleCheckboxChange(cat.id, selectedCategorias, setSelectedCategorias)}
-                  />
-                  {cat.nombre}
-                </label>
-              ))}
+              {categoriasFiltradas.length > 0 ? (
+                categoriasFiltradas.map(cat => (
+                  <label key={cat.id} className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={selectedCategorias.includes(cat.id)}
+                      onChange={() => handleCheckboxChange(cat.id, selectedCategorias, setSelectedCategorias)}
+                    />
+                    {cat.nombre}
+                  </label>
+                ))
+              ) : (
+                <span style={{ color: '#64748b', fontSize: '0.9rem', gridColumn: '1/-1' }}>No se encontraron categorías.</span>
+              )}
             </div>
           </div>
 
+          {/* SECCIÓN MECÁNICAS CON BUSCADOR */}
           <div className={`${styles.formGroup} ${styles.fullWidth}`}>
             <label className={styles.label}>Mecánicas de Apuesta Internas (Lootboxes)</label>
+            <input 
+              type="text"
+              className={styles.input}
+              style={{ marginBottom: '12px', padding: '6px 12px', fontSize: '0.9rem' }}
+              placeholder="🔍 Filtrar mecánicas por nombre..."
+              value={busquedaLootbox}
+              onChange={(e) => setBusquedaLootbox(e.target.value)}
+            />
             <div className={styles.checkboxGrid}>
-              {tiposLootbox.map(lb => (
-                <label key={lb.id} className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={selectedLootboxes.includes(lb.id)}
-                    onChange={() => handleCheckboxChange(lb.id, selectedLootboxes, setSelectedLootboxes)}
-                  />
-                  {lb.nombre}
-                </label>
-              ))}
+              {lootboxesFiltradas.length > 0 ? (
+                lootboxesFiltradas.map(lb => (
+                  <label key={lb.id} className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      checked={selectedLootboxes.includes(lb.id)}
+                      onChange={() => handleCheckboxChange(lb.id, selectedLootboxes, setSelectedLootboxes)}
+                    />
+                    {lb.nombre}
+                  </label>
+                ))
+              ) : (
+                <span style={{ color: '#64748b', fontSize: '0.9rem', gridColumn: '1/-1' }}>No se encontraron mecánicas de apuesta.</span>
+              )}
             </div>
           </div>
 
