@@ -4,13 +4,20 @@ import { type Juego } from '../../interfaces';
 import JuegoCard from './JuegoCard';
 import styles from './CatalogoPage.module.css';
 
-// 1. Definimos la interfaz para recibir la navegación del App.tsx
+// Interfaz local para manejar el tipado de categorías que vienen de la BD
+interface Categoria {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+}
+
 interface CatalogoPageProps {
   onNavigate: (page: string, juegoId?: number) => void;
 }
 
 export default function CatalogoPage({ onNavigate }: CatalogoPageProps) {
   const [juegos, setJuegos] = useState<Juego[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]); // <-- NUEVO: Estado para las categorías de la BD
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -18,12 +25,20 @@ export default function CatalogoPage({ onNavigate }: CatalogoPageProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeCategory, setActiveCategory] = useState<string>('Todos');
 
+  // Carga paralela de Juegos y Categorías desde Railway
   useEffect(() => {
-    const cargarJuegos = async () => {
+    const cargarDatos = async () => {
       try {
         setLoading(true);
-        const response = await api.get<Juego[]>('/juegos');
-        setJuegos(response.data || []);
+        
+        // Ejecutamos ambas peticiones al mismo tiempo para ahorrar tiempo de carga
+        const [juegosRes, catsRes] = await Promise.all([
+          api.get<Juego[]>('/juegos'),
+          api.get<Categoria[]>('/categorias') // <-- Asegúrate de tener esta ruta configurada en Gin
+        ]);
+
+        setJuegos(juegosRes.data || []);
+        setCategorias(catsRes.data || []);
         setError(null);
       } catch (err) {
         console.error(err);
@@ -32,16 +47,14 @@ export default function CatalogoPage({ onNavigate }: CatalogoPageProps) {
         setLoading(false);
       }
     };
-    cargarJuegos();
+    cargarDatos();
   }, []);
-
-  // Lista de categorías estáticas
-  const categoriesFiltro = ['Todos', 'Acción', 'Aventura', 'Deportes', 'Estrategia', 'Multijugador'];
 
   // Lógica combinada de filtrado
   const juegosFiltrados = juegos.filter((juego) => {
     const cumpleBusqueda = juego.titulo.toLowerCase().includes(searchQuery.toLowerCase());
     
+    // Filtramos comparando contra el nombre de la categoría mapeada dinámicamente
     const cumpleCategoria = activeCategory === 'Todos' || juego.categorias?.some(
       (cat) => cat.nombre.toLowerCase() === activeCategory.toLowerCase()
     );
@@ -86,15 +99,24 @@ export default function CatalogoPage({ onNavigate }: CatalogoPageProps) {
         />
       </div>
 
-      {/* Selector de Categorías */}
+      {/* Selector de Categorías 100% DINÁMICO */}
       <div className={styles.filterContainer}>
-        {categoriesFiltro.map((cat) => (
+        {/* Botón estático para limpiar filtros */}
+        <button
+          className={`${styles.filterBtn} ${activeCategory === 'Todos' ? styles.filterBtnActive : ''}`}
+          onClick={() => setActiveCategory('Todos')}
+        >
+          Todos
+        </button>
+
+        {/* Mapeo de las categorías reales de PostgreSQL */}
+        {categorias.map((cat) => (
           <button
-            key={cat}
-            className={`${styles.filterBtn} ${activeCategory === cat ? styles.filterBtnActive : ''}`}
-            onClick={() => setActiveCategory(cat)}
+            key={cat.id}
+            className={`${styles.filterBtn} ${activeCategory === cat.nombre ? styles.filterBtnActive : ''}`}
+            onClick={() => setActiveCategory(cat.nombre)}
           >
-            {cat}
+            {cat.nombre}
           </button>
         ))}
       </div>
@@ -103,7 +125,6 @@ export default function CatalogoPage({ onNavigate }: CatalogoPageProps) {
       <div className={styles.listStack}>
         {juegosFiltrados.length > 0 ? (
           juegosFiltrados.map((juego) => (
-            // 2. Usamos el onNavigate nativo con el id real del juego
             <div 
               key={juego.id} 
               onClick={() => onNavigate('detalle-juego', juego.id)} 
